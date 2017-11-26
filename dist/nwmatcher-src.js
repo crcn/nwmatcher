@@ -1,3 +1,4 @@
+import { RegExp } from "core-js/library/web/timers";
 
 /*
  * Copyright (C) 2007-2017 Diego Perini
@@ -16,7 +17,18 @@
  *  http://javascript.nwbox.com/NWMatcher/nwmatcher.js
  */
 
-export default function(global) {
+(function(global, factory) {
+
+  if (typeof module == 'object' && typeof exports == 'object') {
+    module.exports = factory;
+  } else if (typeof define === 'function' && define["amd"]) {
+    define(factory);
+  } else {
+    global.NW || (global.NW = { });
+    global.NW.Dom = factory(global);
+  }
+
+})(this, function(global) {
 
   var version = 'nwmatcher-1.4.3',
 
@@ -81,7 +93,7 @@ export default function(global) {
   // regular expression to trim extra leading/trailing whitespace in selector strings
   // whitespace is any combination of these 5 character [\x20\t\n\r\f]
   // http://www.w3.org/TR/css3-selectors/#selector-syntax
-  reTrimSpaces = new RegExp('[\\n\\r\\f]|^' + whitespace + '+|' + whitespace + '+$', 'g'),
+  reTrimSpaces = RegExp('[\\n\\r\\f]|^' + whitespace + '+|' + whitespace + '+$', 'g'),
 
   // regular expression used in convertEscapes and unescapeIdentifier
   reEscapedChars = /\\([0-9a-fA-F]{1,6}[\x20\t\n\r\f]?|.)|([\x22\x27])/g,
@@ -93,7 +105,7 @@ export default function(global) {
 
   attrcheck, attributes, attrmatcher, pseudoclass,
 
-  reOptimizeSelector, reSimpleNot, reSplitToken,
+  reOptimizeSelector, reSimpleNot, reHost, reSplitToken,
 
   Optimize, reClass, reSimpleSelector,
 
@@ -113,19 +125,19 @@ export default function(global) {
     // structural pseudo-classes and child selectors
     spseudos: /^\:(root|empty|(?:first|last|only)(?:-child|-of-type)|nth(?:-last)?(?:-child|-of-type)\(\s*(even|odd|(?:[-+]{0,1}\d*n\s*)?[-+]{0,1}\s*\d*)\s*\))?(.*)/i,
     // uistates + dynamic + negation pseudo-classes
-    dpseudos: /^\:(link|visited|target|active|focus|hover|checked|disabled|enabled|selected|lang\(([-\w]{2,})\)|(?:matches|not|host)\(\s*(:nth(?:-last)?(?:-child|-of-type)\(\s*(?:even|odd|(?:[-+]{0,1}\d*n\s*)?[-+]{0,1}\s*\d*)\s*\)|[^()]*)\s*\)|host)?(.*)/i,
+    dpseudos: /^\:(link|visited|target|active|focus|hover|checked|disabled|enabled|selected|lang\(([-\w]{2,})\)|(?:matches|not)\(\s*(:nth(?:-last)?(?:-child|-of-type)\(\s*(?:even|odd|(?:[-+]{0,1}\d*n\s*)?[-+]{0,1}\s*\d*)\s*\)|[^()]*)\s*\))?(.*)/i,
     // pseudo-elements selectors
     epseudos: /^((?:[:]{1,2}(?:after|before|first-letter|first-line))|(?:[:]{2,2}(?:selection|backdrop|placeholder)))?(.*)/i,
     // E > F
-    children: new RegExp('^' + whitespace + '*\\>' + whitespace + '*(.*)'),
+    children: RegExp('^' + whitespace + '*\\>' + whitespace + '*(.*)'),
     // E + F
-    adjacent: new RegExp('^' + whitespace + '*\\+' + whitespace + '*(.*)'),
+    adjacent: RegExp('^' + whitespace + '*\\+' + whitespace + '*(.*)'),
     // E ~ F
-    relative: new RegExp('^' + whitespace + '*\\~' + whitespace + '*(.*)'),
+    relative: RegExp('^' + whitespace + '*\\~' + whitespace + '*(.*)'),
     // E F
-    ancestor: new RegExp('^' + whitespace + '+(.*)'),
+    ancestor: RegExp('^' + whitespace + '+(.*)'),
     // all
-    universal: new RegExp('^\\*(.*)')
+    universal: RegExp('^\\*(.*)')
   },
 
   Tokens = {
@@ -332,7 +344,7 @@ export default function(global) {
       }
 
       return pattern.length ?
-        new RegExp(pattern.join('|')) :
+        RegExp(pattern.join('|')) :
         { 'test': function() { return false; } };
 
     })() :
@@ -806,7 +818,7 @@ export default function(global) {
         }
       }
       setIdentifierSyntax();
-      reValidator = new RegExp(Config.SIMPLENOT ?
+      reValidator = RegExp(Config.SIMPLENOT ?
         standardValidator : extendedValidator);
       return true;
     },
@@ -938,23 +950,30 @@ export default function(global) {
         ')+';
 
       // only allow simple selectors nested in ':not()' pseudo-classes
-      reSimpleNot = new RegExp('^(' +
+      reSimpleNot = RegExp('^(' +
         '(?!:not)' +
         '(' + prefixes + identifier +
         '|\\([^()]*\\))+' +
         '|\\[' + attributes + '\\]' +
         ')$');
 
+      reHost = RegExp('^(' +
+        '(?!:host)' +
+        '(' + prefixes + identifier +
+        '|\\([^()]*\\))+' +
+        '|\\[' + attributes + '\\]' +
+        ')$');
+
       // split last, right most, selector group token
-      reSplitToken = new RegExp('(' +
+      reSplitToken = RegExp('(' +
         prefixes + identifier + '|' +
         '\\[' + attributes + '\\]|' +
         '\\(' + pseudoclass + '\\)|' +
         '\\\\.|[^\\x20\\t\\n\\r\\f>+~])+', 'g');
 
-      reOptimizeSelector = new RegExp(identifier + '|^$');
+      reOptimizeSelector = RegExp(identifier + '|^$');
 
-      reSimpleSelector = new RegExp(
+      reSimpleSelector = RegExp(
         BUGGY_GEBTN && BUGGY_GEBCN || OPERA ?
           '^#?' + identifier + '$' : BUGGY_GEBTN ?
           '^[.#]?' + identifier + '$' : BUGGY_GEBCN ?
@@ -962,18 +981,18 @@ export default function(global) {
           '^(?:\\*|[.#]?' + identifier + ')$');
 
       // matches class selectors
-      reClass = new RegExp('(?:\\[[\\x20\\t\\n\\r\\f]*class\\b|\\.' + identifier + ')');
+      reClass = RegExp('(?:\\[[\\x20\\t\\n\\r\\f]*class\\b|\\.' + identifier + ')');
 
       Optimize = {
-        ID: new RegExp('^\\*?#(' + identifier + ')|' + skip_groups),
-        TAG: new RegExp('^(' + identifier + ')|' + skip_groups),
-        CLASS: new RegExp('^\\.(' + identifier + '$)|' + skip_groups)
+        ID: RegExp('^\\*?#(' + identifier + ')|' + skip_groups),
+        TAG: RegExp('^(' + identifier + ')|' + skip_groups),
+        CLASS: RegExp('^\\.(' + identifier + '$)|' + skip_groups)
       };
 
-      Patterns.id = new RegExp('^#(' + identifier + ')(.*)');
-      Patterns.tagName = new RegExp('^(' + identifier + ')(.*)');
-      Patterns.className = new RegExp('^\\.(' + identifier + ')(.*)');
-      Patterns.attribute = new RegExp('^\\[' + attrmatcher + '\\](.*)');
+      Patterns.id = RegExp('^#(' + identifier + ')(.*)');
+      Patterns.tagName = RegExp('^(' + identifier + ')(.*)');
+      Patterns.className = RegExp('^\\.(' + identifier + ')(.*)');
+      Patterns.attribute = RegExp('^\\[' + attrmatcher + '\\](.*)');
 
       Tokens.identifier = identifier;
       Tokens.attributes = attributes;
@@ -982,7 +1001,7 @@ export default function(global) {
       extendedValidator = standardValidator.replace(pseudoclass, '.*');
 
       // validator for standard selectors as default
-      reValidator = new RegExp(standardValidator);
+      reValidator = RegExp(standardValidator);
     },
 
   // code string reused to build compiled functions
@@ -1161,6 +1180,7 @@ export default function(global) {
                 source = 'if(e===h){' + source + '}';
               }
               break;
+
             case 'empty':
               // element that has no children
               source = 'if(s.isEmpty(e)){' + source + '}';
@@ -1229,16 +1249,25 @@ export default function(global) {
 
           switch (match[1].match(/^\w+/)[0]) {
             case 'host':
-              const oldSource = source;
+              // compile nested selectors, DO NOT pass the callback parameter
+              // SIMPLENOT allow disabling complex selectors nested
+              // in ':not()' pseudo-classes, breaks some test units
+              expr = match[3].replace(reTrimSpaces, '');
 
-              source = 'while(e && !e.host) {e=e.parentNode}; e=e&&e.host;';
-              if (match[3]) {
-                expr = match[3].replace(reTrimSpaces, '');
-                source += 'if(e && ' + compile(expr, '', false) + '(e,s,d,h,g)){' + oldSource + '}';
+              console.log(expr);
+              if (!reHost.test(expr)) {
+                // see above, log error but continue execution
+                emit('Negation pseudo-class only accepts simple selectors "' + selector + '"');
+                return '';
               } else {
-                source += 'if(e) { ' + oldSource + '}';
+                if ('compatMode' in doc) {
+                  source = 'if(!' + compile(expr, '', false) + '(e,s,d,h,g)){' + source + '}';
+                } else {
+                  console.log(expr.replace(/\x22/g, '\\"'));
+                  source = 'if(!s.match(e, "' + expr.replace(/\x22/g, '\\"') + '",g)){' + source +'}';
+                }
               }
-              break;
+
             
             // CSS4 matches pseudo-class
             case 'matches':
@@ -1775,4 +1804,4 @@ export default function(global) {
   initialize(doc);
 
   return Dom;
-}
+});

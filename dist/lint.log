@@ -1,0 +1,8 @@
+/Users/crcn/Developer/public/nwmatcher/src/modules/nwmatcher-cache.js(25): lint warning: multiple statements separated by commas (use semicolons?)
+    (global.NW.Dom || (global.NW.Dom = { })),
+............................................^
+
+/Users/crcn/Developer/public/nwmatcher/src/modules/nwmatcher-cache.js(152): SyntaxError: missing ) in parenthetical
+    };
+.....^
+
