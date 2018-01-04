@@ -1136,13 +1136,13 @@ module.exports = function(global) {
         // *** Child combinator
         // E > F (F children of E)
         else if ((match = selector.match(Patterns.children))) {
-          source = 'var N' + k + '=e;if((e=e.parentNode)&&e.nodeType==1){' + source + '}e=N' + k + ';';
+          source = 'var N' + k + '=e;if((e=e.parentNode&&e.parentNode.host||e.parentNode)&&e.nodeType==1){' + source + '}e=N' + k + ';';
         }
 
         // *** Descendant combinator
         // E F (E ancestor of F)
         else if ((match = selector.match(Patterns.ancestor))) {
-          source = 'var N' + k + '=e;while((e=e.parentNode)&&e.nodeType==1){' + source + '}e=N' + k + ';';
+          source = 'var N' + k + '=e;while((e=e.parentNode&&e.parentNode.host||e.parentNode)&&e.nodeType==1){' + source + '}e=N' + k + ';';
         }
 
         // *** Structural pseudo-classes
@@ -1294,7 +1294,7 @@ module.exports = function(global) {
                 'if((n==""&&h.lang=="' + match[2].toLowerCase() + '")||' +
                 '(n&&(n=="' + match[2].toLowerCase() +
                 '"||n.substr(0,3)=="' + test.toLowerCase() + '")))' +
-                '{' + source + 'break;}}while((e=e.parentNode)&&e!==g);';
+                '{' + source + 'break;}}while((e=e.parentNode||e.host)&&e!==g);';
               break;
 
             // CSS3 target pseudo-class
@@ -1331,7 +1331,7 @@ module.exports = function(global) {
             // the 'selected' property is only available for option elements
             case 'selected':
               // fix Safari selectedIndex property bug
-              expr = BUGGY_SELECTED ? '||(n=e.parentNode)&&n.options[n.selectedIndex]===e' : '';
+              expr = BUGGY_SELECTED ? '||(n=e.parentNode||e.host)&&n.options[n.selectedIndex]===e' : '';
               source = 'if(/^option$/i.test(e.nodeName)&&(e.selected||e.checked' + expr + ')){' + source + '}';
               break;
 
