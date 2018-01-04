@@ -16,7 +16,7 @@
  *  http://javascript.nwbox.com/NWMatcher/nwmatcher.js
  */
 
-export default function(global) {
+module.exports = function(global) {
 
   var version = 'nwmatcher-1.4.3',
 
@@ -1231,12 +1231,12 @@ export default function(global) {
             case 'host':
               const oldSource = source;
 
-              source = 'while(e && !e.host) {e=e.parentNode}; e=e&&e.host;';
+              // source = 'while(e && !e.host) {e=e.parentNode}; e=e&&e.host;';
               if (match[3]) {
                 expr = match[3].replace(reTrimSpaces, '');
-                source += 'if(e && ' + compile(expr, '', false) + '(e,s,d,h,g)){' + oldSource + '}';
+                source = 'if(e && e.shadowRoot && ' + compile(expr, '', false) + '(e,s,d,h,g)){' + oldSource + '}';
               } else {
-                source += 'if(e) { ' + oldSource + '}';
+                source = 'if(e && e.shadowRoot) { ' + oldSource + '}';
               }
               break;
             
@@ -1342,7 +1342,7 @@ export default function(global) {
         }
 
         else if ((match = selector.match(Patterns.epseudos)) && match[1]) {
-          source = 'if(!(/1|11/).test(e.nodeType)){' + source + '}';
+          source = 'if(!(/11/).test(e.nodeType)){' + source + '}';
         }
 
         else {
